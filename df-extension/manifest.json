@@ -4,7 +4,9 @@
     "version": "1.0.0",
     "description": "ドクターズ・ファイルの検索一覧から「取材記事あり」クリニック情報を抽出し CSV/JSON でエクスポートします。",
     "permissions": [
-        "downloads"
+        "downloads",
+        "tabs",
+        "scripting"
     ],
     "host_permissions": [
         "https://doctorsfile.jp/*"

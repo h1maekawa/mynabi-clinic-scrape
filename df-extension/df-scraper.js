@@ -462,31 +462,83 @@ function extractClinicFromHtml(html, clinicBaseUrl, nameFromList = "") {
    § 7  クロール: 一覧ページ → クリニックURL収集
    ═══════════════════════════════════════════════════ */
 
+// ─── タブ操作用ヘルパー ───
+function createTab(url) {
+    return new Promise((resolve) => {
+        chrome.tabs.create({ url, active: false }, (tab) => {
+            resolve(tab);
+        });
+    });
+}
+
+function waitTabLoaded(tabId) {
+    return new Promise((resolve) => {
+        const listener = (changeTabId, changeInfo) => {
+            if (changeTabId === tabId && changeInfo.status === "complete") {
+                chrome.tabs.onUpdated.removeListener(listener);
+                resolve();
+            }
+        };
+        chrome.tabs.onUpdated.addListener(listener);
+    });
+}
+
+async function getTabHtml(tabId) {
+    const results = await chrome.scripting.executeScript({
+        target: { tabId },
+        func: () => document.documentElement.outerHTML
+    });
+    return results[0].result;
+}
+
+async function clickNextPage(tabId) {
+    const results = await chrome.scripting.executeScript({
+        target: { tabId },
+        func: () => {
+            const nextBtn = document.querySelector(".pagination__next");
+            if (nextBtn) {
+                nextBtn.click();
+                return true;
+            }
+            return false;
+        }
+    });
+    return results[0].result;
+}
+
 async function discoverClinicPages(startUrl, maxPages, delaySec) {
-    const queue         = [normalizeUrl(startUrl)];
-    const queuedSet     = new Set(queue);
-    const visitedPages  = new Set();
-    const clinicUrls    = []; // { name, url } のオブジェクト配列
-    const clinicSeen    = new Set();
+    setStatus("一覧タブを起動中...");
+    log(`クローリングタブを開いています: ${startUrl}`);
+    
+    let tab;
+    try {
+        tab = await createTab(startUrl);
+        await waitTabLoaded(tab.id);
+        await sleep(2); // ロード後の初期化待機
+    } catch (err) {
+        log(`ERROR クローリングタブの起動に失敗しました: ${err.message}`);
+        return [];
+    }
 
-    while (queue.length && visitedPages.size < maxPages) {
-        const url = queue.shift();
-        if (!url || visitedPages.has(url)) continue;
-        visitedPages.add(url);
+    const clinicUrls = [];
+    const clinicSeen = new Set();
+    let pageCount = 0;
 
-        setStatus(`一覧巡回: ${visitedPages.size}/${maxPages}`);
-        log(`一覧取得: ${url}`);
+    while (pageCount < maxPages) {
+        pageCount++;
+        setStatus(`一覧解析: ${pageCount}/${maxPages} ページ目`);
+        log(`ページ解析中 [ページ: ${pageCount}]`);
 
         let html;
-        try { html = await fetchHtml(url); }
-        catch (err) {
-            log(`WARN 一覧取得失敗: ${url} (${errText(err)})`);
-            await sleep(delaySec);
-            continue;
+        try {
+            html = await getTabHtml(tab.id);
+        } catch (err) {
+            log(`WARN タブ内HTML取得失敗: ${err.message}`);
+            break;
         }
 
-        const { clinicUrls: found, nextPageUrls } = extractLinksFromSearchPage(url, html);
-        log(`取材記事ありクリニック発見: ${found.length}件`);
+        const { clinicUrls: found } = extractLinksFromSearchPage(startUrl, html);
+        log(`現在のページで「取材記事あり」の医院を発見: ${found.length}件`);
         
         found.forEach((item) => {
             if (!clinicSeen.has(item.url)) {
@@ -495,16 +547,35 @@ async function discoverClinicPages(startUrl, maxPages, delaySec) {
             }
         });
 
-        nextPageUrls.forEach((u) => {
-            const key = normalizeUrl(u);
-            if (!visitedPages.has(key) && !queuedSet.has(key)) {
-                queue.push(key);
-                queuedSet.add(key);
-            }
-        });
+        if (pageCount >= maxPages) {
+            log("上限ページ数に達したため、クローリングを完了します。");
+            break;
+        }
 
-        await sleep(delaySec);
+        setStatus(`次のページへ遷移中...`);
+        let clicked = false;
+        try {
+            clicked = await clickNextPage(tab.id);
+        } catch (err) {
+            log(`WARN タブ内での次ページクリック操作に失敗しました: ${err.message}`);
+        }
+
+        if (!clicked) {
+            log("「次へ」ボタン (pagination__next) が見つかりません。最後のページに到達したためクローリングを終了します。");
+            break;
+        }
+
+        // 次ページのロード・描画を待つ安全なスリープ
+        const waitTime = Math.max(delaySec, 2.5);
+        await sleep(waitTime);
     }
+
+    // クロール終了後、作成したタブを自動クローズ
+    try {
+        chrome.tabs.remove(tab.id);
+        log("クローリングタブを閉じました。");
+    } catch { /* ignore */ }
+
     return clinicUrls;
 }
 
