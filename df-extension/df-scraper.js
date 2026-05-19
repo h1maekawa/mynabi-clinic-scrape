@@ -115,10 +115,12 @@ function extractLinksFromSearchPage(baseUrl, html) {
     const nextPageSeen = new Set();
 
     // ユーザー指定: a.result__name に href が埋め込まれているもの
-    // かつ取材記事あり（.result-link__article が存在する）クリニックをカード単位で抽出
+    // かつ取材記事あり（取材記事クラスや /df/ リンクが存在する）クリニックをカード単位で抽出
     doc.querySelectorAll(".result").forEach((resultEl) => {
-        const hasArticle = resultEl.querySelector(".result-link__article") !== null;
-        if (!hasArticle) return; // 取材記事なしはスキップ
+        const hasArticle = resultEl.querySelector(".result-link__article") !== null ||
+                           resultEl.querySelector(".result-link__df") !== null ||
+                           resultEl.querySelector("a[href*='/df/']") !== null;
+        if (!hasArticle) return; // 取材記事なしは完全にスキップ
 
         const nameEl = resultEl.querySelector("a.result__name");
         if (nameEl) {
@@ -574,6 +576,11 @@ async function runScrape() {
             try {
                 const html   = await fetchHtml(item.url);
                 const record = extractClinicFromHtml(html, item.url, item.name);
+                // 二重チェック: 取材記事URLが取得できなかった（取材記事がない）場合は除外
+                if (!record["取材記事URL"]) {
+                    log(`スキップ（取材記事なし）: ${record["医院名"] || item.url}`);
+                    continue;
+                }
                 rows.push(record);
                 log(`抽出完了: ${record["医院名"] || item.url}`);
             } catch (err) {
