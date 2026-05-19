@@ -149,7 +149,17 @@ function extractLinksFromSearchPage(baseUrl, html) {
         });
     }
 
-    // ページネーション (?page=N)
+    // ページネーション: pagination__next クラスを最優先で取得
+    const nextEl = doc.querySelector("a.pagination__next");
+    if (nextEl) {
+        const href = (nextEl.getAttribute("href") || "").trim();
+        try {
+            const abs = new URL(href, baseUrl);
+            pushUnique(nextPageUrls, nextPageSeen, abs.href);
+        } catch { /* ignore */ }
+    }
+
+    // フォールバック: 他の ?page=N リンクも補助的に巡回キューに加える
     doc.querySelectorAll("a[href]").forEach((a) => {
         const href = (a.getAttribute("href") || "").trim();
         try {
