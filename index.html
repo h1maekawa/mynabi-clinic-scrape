@@ -3,28 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mynavi Clinic Scraper - マイナビクリニック専用スクレイピングツール</title>
-    <meta name="description" content="マイナビクリニックの一覧ページからクリニック詳細情報を自動巡回で抽出し、CSV/JSONでエクスポートできるプロフェッショナルなChrome拡張機能。">
-    <!-- Google Fonts -->
+    <title>Clinic Scraper Tools - マイナビ & ドクターズ・ファイル 対応</title>
+    <meta name="description" content="マイナビクリニック・ドクターズ・ファイル対応の医院情報スクレイピング Chrome 拡張機能ツール集。">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Noto+Sans+JP:wght@300;400;700;900&display=swap" rel="stylesheet">
-    <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- Header / Navigation -->
+    <!-- Header -->
     <header>
         <div class="container header-container">
             <div class="logo">
                 <i class="fa-solid fa-spider logo-icon"></i>
-                <span class="logo-text">Mynavi Clinic Scraper</span>
+                <span class="logo-text">Clinic Scraper Tools</span>
             </div>
             <nav>
-                <a href="#features">機能</a>
-                <a href="#columns">取得データ</a>
+                <a href="#tools">ツール一覧</a>
                 <a href="#how-to-use">使い方</a>
                 <a href="https://github.com/h1maekawa/mynabi-clinic-scrape" target="_blank" class="nav-git-btn">
                     <i class="fa-brands fa-github"></i> GitHub
@@ -33,42 +30,44 @@
         </div>
     </header>
 
-    <!-- Hero Section -->
+    <!-- Hero -->
     <section class="hero">
         <div class="hero-bg"></div>
         <div class="hero-overlay"></div>
         <div class="container hero-container">
             <div class="hero-content">
                 <span class="badge">Chrome Extension (Manifest V3)</span>
-                <h1>マイナビクリニック<br><span class="highlight">自動クローリングツール</span></h1>
-                <p class="hero-lead">一覧ページを指定するだけで、詳細ページを自動巡回。店舗名、電話番号、診療時間、休診日などを瞬時にパースし、Excelでそのまま使えるBOM付きCSV/JSONで保存します。</p>
+                <h1>医院情報スクレイピング<br><span class="highlight">ツール集</span></h1>
+                <p class="hero-lead">
+                    マイナビクリニック・ドクターズ・ファイルに対応した<br>
+                    2つの独立したChrome拡張機能。<br>
+                    一覧ページを指定するだけで医院情報を自動収集し、<br>
+                    CSV / JSON で即エクスポート。
+                </p>
                 <div class="hero-actions">
-                    <a href="#how-to-use" class="btn btn-primary"><i class="fa-solid fa-download"></i> 無料で使う</a>
-                    <a href="https://github.com/h1maekawa/mynabi-clinic-scrape" target="_blank" class="btn btn-secondary"><i class="fa-brands fa-github"></i> リポジトリを見る</a>
+                    <a href="#tools" class="btn btn-primary"><i class="fa-solid fa-arrow-down"></i> ツールを見る</a>
+                    <a href="https://github.com/h1maekawa/mynabi-clinic-scrape" target="_blank" class="btn btn-secondary">
+                        <i class="fa-brands fa-github"></i> GitHub
+                    </a>
                 </div>
             </div>
             <div class="hero-visual">
-                <!-- ここにダッシュボードのプレビューイメージやカードなどを配置 -->
                 <div class="preview-card">
                     <div class="preview-header">
-                        <span class="dot red"></span>
-                        <span class="dot yellow"></span>
-                        <span class="dot green"></span>
-                        <span class="preview-title">Mynavi Clinic Scraper Control</span>
+                        <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+                        <span class="preview-title">Clinic Scraper Control Panel</span>
                     </div>
                     <div class="preview-body">
-                        <div class="preview-line"><span>開始URL:</span> <span class="val">https://clinic.mynavi.jp/article_list/13...</span></div>
-                        <div class="preview-line"><span>上限ページ数:</span> <span class="val">80 ページ</span></div>
-                        <div class="preview-line"><span>待機秒:</span> <span class="val">0.4 秒</span></div>
-                        <div class="preview-progress">
-                            <div class="progress-bar-fill" style="width: 75%;"></div>
-                        </div>
-                        <div class="preview-status"><i class="fa-solid fa-spinner fa-spin"></i> 記事解析中: 42/56件...</div>
+                        <div class="preview-line"><span>対象サイト:</span><span class="val">Mynavi / DoctorsFile</span></div>
+                        <div class="preview-line"><span>一覧ページ上限:</span><span class="val">80 ページ</span></div>
+                        <div class="preview-line"><span>待機秒:</span><span class="val">0.4 秒</span></div>
+                        <div class="preview-progress"><div class="progress-bar-fill" style="width:68%"></div></div>
+                        <div class="preview-status"><i class="fa-solid fa-spinner fa-spin"></i> クリニック解析中: 34/50件...</div>
                         <div class="preview-logs">
-                            <div>[18:42:01] 一覧取得: https://clinic.mynavi.jp/article_list/13</div>
-                            <div>[18:42:03] 記事ページ発見: 56件</div>
-                            <div>[18:42:04] 記事取得: https://clinic.mynavi.jp/article/clinic_01</div>
-                            <div>[18:42:05] post-clinic-block抽出: 5件</div>
+                            <div>[19:12:01] 一覧取得: https://clinic.mynavi.jp/...</div>
+                            <div>[19:12:03] 記事ページ発見: 56件</div>
+                            <div>[19:12:05] post-clinic-block抽出: 5件</div>
+                            <div>[19:12:06] 取材記事ありクリニック発見: 20件</div>
                         </div>
                     </div>
                 </div>
@@ -76,118 +75,134 @@
         </div>
     </section>
 
-    <!-- Features Section -->
-    <section id="features" class="features">
+    <!-- Tools Section -->
+    <section id="tools" class="tools-section">
         <div class="container">
             <div class="section-header">
-                <h2>FEATURES</h2>
-                <p class="subtitle">自動化と使いやすさを追求した、プロ仕様の設計</p>
+                <h2>TOOLS</h2>
+                <p class="subtitle">用途に合わせて使い分ける 2 つの独立した拡張機能</p>
             </div>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="icon-box"><i class="fa-solid fa-route"></i></div>
-                    <h3>2段階自動クローリング</h3>
-                    <p>一覧ページを自動的に巡回し、その中の紹介記事リンクを全自動で網羅。手動での遷移は一切不要です。</p>
+
+            <div class="tools-grid">
+
+                <!-- Tool 1: Mynavi -->
+                <div class="tool-card tool-mynavi">
+                    <div class="tool-card-header">
+                        <div class="tool-icon"><i class="fa-solid fa-newspaper"></i></div>
+                        <div>
+                            <div class="tool-badge">拡張機能 #1</div>
+                            <h3>Mynavi Clinic Scraper</h3>
+                            <p class="tool-target">対象: <code>clinic.mynavi.jp</code></p>
+                        </div>
+                    </div>
+                    <p class="tool-desc">
+                        マイナビクリニックの記事一覧ページを自動巡回し、各記事内の
+                        クリニック情報ブロック（<code>.post-clinic-block</code>）を解析。
+                        医院名・電話番号・午前/午後の診療時間・休診日を構造化して抽出します。
+                    </p>
+                    <div class="tool-columns">
+                        <div class="col-item"><i class="fa-solid fa-check"></i> 記事タイトル</div>
+                        <div class="col-item"><i class="fa-solid fa-check"></i> 医院名</div>
+                        <div class="col-item"><i class="fa-solid fa-check"></i> 電話番号</div>
+                        <div class="col-item"><i class="fa-solid fa-check"></i> 診療科目 / エリア</div>
+                        <div class="col-item"><i class="fa-solid fa-check"></i> 午前始 / 午前終</div>
+                        <div class="col-item"><i class="fa-solid fa-check"></i> 午後始 / 午後終</div>
+                        <div class="col-item"><i class="fa-solid fa-check"></i> 休診日</div>
+                    </div>
+                    <div class="tool-dir">
+                        <i class="fa-solid fa-folder-open"></i>
+                        <code>extension/</code> フォルダを Chrome に読み込む
+                    </div>
                 </div>
-                <div class="feature-card">
-                    <div class="icon-box"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
-                    <h3>高精度インテリジェントパース</h3>
-                    <p>診療時間テーブルや休診日テキスト、住所、電話番号の特殊なフォーマットも自動解析し、規則的な形式に平準化します。</p>
+
+                <!-- Tool 2: Doctors File -->
+                <div class="tool-card tool-df">
+                    <div class="tool-card-header">
+                        <div class="tool-icon tool-icon-green"><i class="fa-solid fa-user-doctor"></i></div>
+                        <div>
+                            <div class="tool-badge tool-badge-green">拡張機能 #2</div>
+                            <h3>Doctors File Scraper</h3>
+                            <p class="tool-target">対象: <code>doctorsfile.jp</code></p>
+                        </div>
+                    </div>
+                    <p class="tool-desc">
+                        ドクターズ・ファイルの検索一覧から <strong>「取材記事あり」</strong>
+                        （<code>result-link__article</code>）クリニックのみを選別・巡回。
+                        医師名・住所・最寄駅・診療時間・紹介文など詳細情報を抽出します。
+                    </p>
+                    <div class="tool-columns">
+                        <div class="col-item"><i class="fa-solid fa-check"></i> 医院名 / 医師名</div>
+                        <div class="col-item"><i class="fa-solid fa-check"></i> 診療科目</div>
+                        <div class="col-item"><i class="fa-solid fa-check"></i> 住所 / 都道府県 / エリア</div>
+                        <div class="col-item"><i class="fa-solid fa-check"></i> 最寄駅</div>
+                        <div class="col-item"><i class="fa-solid fa-check"></i> 電話番号</div>
+                        <div class="col-item"><i class="fa-solid fa-check"></i> 診療時間 / 休診日</div>
+                        <div class="col-item"><i class="fa-solid fa-check"></i> 特徴 / 紹介文</div>
+                        <div class="col-item"><i class="fa-solid fa-check"></i> 取材記事URL / 緯度経度</div>
+                    </div>
+                    <div class="tool-dir">
+                        <i class="fa-solid fa-folder-open"></i>
+                        <code>df-extension/</code> フォルダを Chrome に読み込む
+                    </div>
                 </div>
-                <div class="feature-card">
-                    <div class="icon-box"><i class="fa-solid fa-shield-halved"></i></div>
-                    <h3>サーバー負荷制御</h3>
-                    <p>リクエスト間にカスタム待機秒を設定可能。マイナビクリニック側のサーバーに負担をかけずに安全に実行できます。</p>
-                </div>
-                <div class="feature-card">
-                    <div class="icon-box"><i class="fa-solid fa-file-csv"></i></div>
-                    <h3>Excel対応BOM付きCSV</h3>
-                    <p>抽出したデータは、Excelで開いた際に文字化けしない「BOM付きUTF-8」形式のCSV、またはJSONでエクスポートできます。</p>
-                </div>
+
             </div>
         </div>
     </section>
 
-    <!-- Columns (Data Layout) Section -->
-    <section id="columns" class="columns">
+    <!-- Directory Structure -->
+    <section class="directory-section">
         <div class="container">
             <div class="section-header">
-                <h2>EXTRACTED DATA</h2>
-                <p class="subtitle">業界最高レベルの解析精度で、以下の詳細データを抽出</p>
+                <h2>DIRECTORY</h2>
+                <p class="subtitle">リポジトリ構成 — 拡張機能ごとにフォルダが独立</p>
             </div>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>出力列名</th>
-                            <th>概要</th>
-                            <th>パース元のHTML構造</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>記事タイトル</strong></td>
-                            <td>クリニックが紹介されている記事の見出し</td>
-                            <td><code>h1.heading__title</code> をパース</td>
-                        </tr>
-                        <tr>
-                            <td><strong>診療科目</strong></td>
-                            <td>対象の市区町村・エリア名（例: 新宿区、川口市）</td>
-                            <td>記事タイトル内の都道府県名からエリアを自動推測</td>
-                        </tr>
-                        <tr>
-                            <td><strong>電話番号</strong></td>
-                            <td>クリニックの直通電話番号</td>
-                            <td>「電話番号」ラベル、またはテキストの正規表現マッチ</td>
-                        </tr>
-                        <tr>
-                            <td><strong>医院名</strong></td>
-                            <td>クリニックの正式名称</td>
-                            <td><code>.post-clinic-block_title</code> などのヘッダーから抽出</td>
-                        </tr>
-                        <tr>
-                            <td><strong>午前始 / 午前終</strong></td>
-                            <td>午前の診療時間（開始・終了）</td>
-                            <td>診療時間テーブルの午前スロットをパース</td>
-                        </tr>
-                        <tr>
-                            <td><strong>午後始 / 午後終</strong></td>
-                            <td>午後の診療時間（開始・終了）</td>
-                            <td>診療時間テーブルの午後スロットをパース</td>
-                        </tr>
-                        <tr>
-                            <td><strong>休診日</strong></td>
-                            <td>クリニックの定休日・臨時休診</td>
-                            <td>テーブルの「休」マークやテキスト内の休診記述</td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="dir-tree">
+<pre>
+mynabi-clinic-scrape/
+├── <span class="dir-highlight">extension/</span>               ← <strong>拡張機能 #1: マイナビクリニック</strong>
+│   ├── manifest.json        (host: clinic.mynavi.jp)
+│   ├── popup.html / popup.js
+│   ├── scraper.html / scraper.css / scraper.js
+│
+├── <span class="dir-highlight dir-green">df-extension/</span>            ← <strong>拡張機能 #2: ドクターズ・ファイル</strong>
+│   ├── manifest.json        (host: doctorsfile.jp)
+│   ├── popup.html / popup.js
+│   ├── scraper.html / scraper.css / df-scraper.js
+│
+├── assets/
+│   └── piro-design.png      (LP 背景画像)
+│
+├── index.html               ← <strong>ランディングページ (本ページ)</strong>
+├── style.css
+└── README.md
+</pre>
             </div>
         </div>
     </section>
 
-    <!-- How To Use Section -->
+    <!-- How To Use -->
     <section id="how-to-use" class="how-to-use">
         <div class="container">
             <div class="section-header">
                 <h2>HOW TO USE</h2>
-                <p class="subtitle">わずか3ステップで、すぐにスクレイピングを開始可能</p>
+                <p class="subtitle">いずれのツールも同じ手順でインストール・実行できます</p>
             </div>
             <div class="steps">
                 <div class="step-card">
                     <div class="step-num">01</div>
-                    <h3>インストール</h3>
-                    <p>リポジトリからフォルダをダウンロードし、Chromeの <code>chrome://extensions/</code> からデベロッパーモードを有効にして「パッケージ化されていない拡張機能を読み込む」で読み込みます。</p>
+                    <h3>リポジトリをダウンロード</h3>
+                    <p>GitHub からリポジトリをクローンまたは ZIP でダウンロードします。使いたいツールのフォルダ（<code>extension/</code> または <code>df-extension/</code>）を用意します。</p>
                 </div>
                 <div class="step-card">
                     <div class="step-num">02</div>
-                    <h3>スクレイパーの起動</h3>
-                    <p>Chromeの拡張機能バーのアイコンをクリックし、<strong>「スクレイパーを開く」</strong> をクリックします。別タブでコントロールパネルが開きます。</p>
+                    <h3>Chrome に拡張機能を読み込む</h3>
+                    <p><code>chrome://extensions/</code> を開き、右上の「デベロッパー モード」を ON にして「パッケージ化されていない拡張機能を読み込む」から対象フォルダを選択します。</p>
                 </div>
                 <div class="step-card">
                     <div class="step-num">03</div>
-                    <h3>実行と保存</h3>
-                    <p>マイナビクリニックの一覧ページURLを入力し、巡回上限や待機秒を設定して「実行」をクリック。処理が完了したら「CSV保存」をクリックします。</p>
+                    <h3>実行 → CSV / JSON 保存</h3>
+                    <p>ツールバーのアイコンから「スクレイパーを開く」をクリック。開始 URL・上限ページ数・待機秒を設定して「実行」。完了後に CSV / JSON をダウンロード。</p>
                 </div>
             </div>
         </div>
@@ -196,9 +211,11 @@
     <!-- Footer -->
     <footer>
         <div class="container footer-container">
-            <p>&copy; 2026 Mynavi Clinic Scraper. Designed with High Performance and Precision.</p>
+            <p>&copy; 2026 Clinic Scraper Tools. Built for data professionals.</p>
             <div class="footer-links">
-                <a href="https://github.com/h1maekawa/mynabi-clinic-scrape" target="_blank"><i class="fa-brands fa-github"></i> GitHub Repository</a>
+                <a href="https://github.com/h1maekawa/mynabi-clinic-scrape" target="_blank">
+                    <i class="fa-brands fa-github"></i> GitHub Repository
+                </a>
             </div>
         </div>
     </footer>

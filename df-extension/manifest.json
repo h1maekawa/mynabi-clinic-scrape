@@ -1,0 +1,16 @@
+{
+    "manifest_version": 3,
+    "name": "Doctors File Scraper",
+    "version": "1.0.0",
+    "description": "ドクターズ・ファイルの検索一覧から「取材記事あり」クリニック情報を抽出し CSV/JSON でエクスポートします。",
+    "permissions": [
+        "downloads"
+    ],
+    "host_permissions": [
+        "https://doctorsfile.jp/*"
+    ],
+    "action": {
+        "default_title": "DF Scraper",
+        "default_popup": "popup.html"
+    }
+}

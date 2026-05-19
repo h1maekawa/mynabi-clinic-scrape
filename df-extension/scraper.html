@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Doctors File Scraper</title>
+    <link rel="stylesheet" href="scraper.css" />
+</head>
+<body>
+    <main>
+        <h1>Doctors File Scraper</h1>
+        <p class="lead">
+            検索一覧ページを指定するだけで「取材記事あり」クリニックのみを自動巡回し、
+            医院名・医師名・電話番号・診療時間などを JSON/CSV で保存します。
+        </p>
+
+        <section class="panel">
+            <label>
+                開始URL（ドクターズ・ファイル 検索一覧ページ）
+                <input id="startUrl" type="url"
+                    value="https://doctorsfile.jp/search/pv655_pv656_pv657_pv658_pv659_pv660_pv661_pv662_pv663_pv664_pv665_pv666_pv667_pv668_pv669_pv670_pv671_pv672_pv673_pv674_pv675_pv676_pv677_pv678_pv679_pv680_pv681_pv682_pv683_pv684_pv685_pv686_pv687_pv688_pv689_pv690_pv691_pv692_pv693_pv694_pv695_pv696_pv697_pv698_pv699_pv700_pv701_pv702_pv703_pv704_pv705_pv706_pv707_pv708_pv709_pv710_pv711_pv712_pv713_pv714_pv715_pv716/" />
+            </label>
+
+            <div class="row">
+                <label>
+                    一覧ページ上限
+                    <input id="maxPages" type="number" min="1" value="50" />
+                </label>
+                <label>
+                    取得件数上限(0=全件)
+                    <input id="maxClinics" type="number" min="0" value="0" />
+                </label>
+                <label>
+                    待機秒
+                    <input id="delay" type="number" min="0" step="0.1" value="0.5" />
+                </label>
+            </div>
+
+            <div class="buttons">
+                <button id="startBtn">実行</button>
+                <button id="jsonBtn" disabled>JSON保存</button>
+                <button id="csvBtn" disabled>CSV保存</button>
+            </div>
+
+            <div id="status" class="status">待機中</div>
+        </section>
+
+        <section class="panel">
+            <h2>ログ</h2>
+            <pre id="log"></pre>
+        </section>
+    </main>
+    <script src="df-scraper.js"></script>
+</body>
+</html>
