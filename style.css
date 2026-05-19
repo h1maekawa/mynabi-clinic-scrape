@@ -74,7 +74,7 @@ nav a:hover { color: #fff; }
 .section-header .subtitle { color: var(--text-muted); font-size: 1.05rem; }
 
 .tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; }
-.tool-card { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 20px; padding: 2.5rem; transition: var(--transition); display: flex; flex-direction: column; gap: 1.5rem; }
+.tool-card { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 20px; padding: 2.5rem; transition: var(--transition); display: flex; flex-direction: column; gap: 1.5rem; text-decoration: none; color: inherit; cursor: pointer; }
 .tool-mynavi:hover { border-color: rgba(37,99,235,0.4); box-shadow: 0 20px 40px rgba(0,0,0,0.3),0 0 20px rgba(37,99,235,0.08); transform: translateY(-4px); }
 .tool-df:hover { border-color: rgba(13,105,56,0.4); box-shadow: 0 20px 40px rgba(0,0,0,0.3),0 0 20px rgba(13,105,56,0.08); transform: translateY(-4px); }
 
