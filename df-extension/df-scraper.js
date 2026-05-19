@@ -103,31 +103,53 @@ async function fetchHtml(url) {
    ═══════════════════════════════════════════════════ */
 
 /**
- * 検索一覧ページから「取材記事あり」クリニックURL と次ページURLを抽出。
- * 判定基準: a.result-link__article が存在するカード、または href に /df/ を含むリンク。
+ * 検索一覧ページから「取材記事あり」クリニックの { name, url } と次ページURLを抽出。
+ * 判定基準: 1つずつの .result ブロックに対して、.result-link__article があるものを対象とする。
+ * 医院名は a.result__name から取得し、その href から詳細URLを構成。
  */
 function extractLinksFromSearchPage(baseUrl, html) {
     const doc          = new DOMParser().parseFromString(html, "text/html");
-    const clinicUrls   = [];
+    const clinicUrls   = []; // { name, url } のオブジェクト配列
     const clinicSeen   = new Set();
     const nextPageUrls = [];
     const nextPageSeen = new Set();
 
-    // ── 1次: result-link__article クラスから /h/{id}/ を逆引き ──────
-    doc.querySelectorAll("a.result-link__article").forEach((a) => {
-        const m = (a.getAttribute("href") || "").trim().match(/^(\/h\/\d+)\//);
-        if (m) pushUnique(clinicUrls, clinicSeen, `${DF_HOST}${m[1]}/`);
+    // ユーザー指定: a.result__name に href が埋め込まれているもの
+    // かつ取材記事あり（.result-link__article が存在する）クリニックをカード単位で抽出
+    doc.querySelectorAll(".result").forEach((resultEl) => {
+        const hasArticle = resultEl.querySelector(".result-link__article") !== null;
+        if (!hasArticle) return; // 取材記事なしはスキップ
+
+        const nameEl = resultEl.querySelector("a.result__name");
+        if (nameEl) {
+            const href = (nameEl.getAttribute("href") || "").trim();
+            const m = href.match(/^(\/h\/\d+)\//);
+            if (m) {
+                const name = cleanText(nameEl.textContent);
+                const url = `${DF_HOST}${m[1]}/`;
+                if (!clinicSeen.has(url)) {
+                    clinicSeen.add(url);
+                    clinicUrls.push({ name, url });
+                }
+            }
+        }
     });
 
-    // ── 2次 (フォールバック): /df/ リンクから逆引き ─────────────────
+    // フォールバック: もしカード単位での抽出ができなかった場合、従来通り a.result-link__article から直接
     if (clinicUrls.length === 0) {
-        doc.querySelectorAll("a[href*='/df/']").forEach((a) => {
+        doc.querySelectorAll("a.result-link__article").forEach((a) => {
             const m = (a.getAttribute("href") || "").trim().match(/^(\/h\/\d+)\//);
-            if (m) pushUnique(clinicUrls, clinicSeen, `${DF_HOST}${m[1]}/`);
+            if (m) {
+                const url = `${DF_HOST}${m[1]}/`;
+                if (!clinicSeen.has(url)) {
+                    clinicSeen.add(url);
+                    clinicUrls.push({ name: "", url });
+                }
+            }
         });
     }
 
-    // ── ページネーション (?page=N) ────────────────────────────────────
+    // ページネーション (?page=N)
     doc.querySelectorAll("a[href]").forEach((a) => {
         const href = (a.getAttribute("href") || "").trim();
         try {
@@ -147,6 +169,26 @@ function extractLinksFromSearchPage(baseUrl, html) {
    ═══════════════════════════════════════════════════ */
 
 function dfExtractAddress(doc) {
+    // 1. 最優先: class="box-column" の中にある住所
+    const boxCols = doc.querySelectorAll(".box-column");
+    for (const box of boxCols) {
+        // ico-area クラスを持つアイコン（住所用アイコン）の隣のテキスト、または .clinic-data
+        const iconArea = box.querySelector(".ico-area");
+        if (iconArea && iconArea.parentElement) {
+            const text = cleanText(iconArea.parentElement.textContent);
+            if (text) return text;
+        }
+        // 都道府県を含む要素を探す
+        const prefRe = new RegExp(`(${PREFECTURES.join("|")})`);
+        for (const el of box.querySelectorAll("li, td, p, div")) {
+            const text = cleanText(el.textContent);
+            if (prefRe.test(text) && text.length > 5 && text.length < 120 && !text.includes("電話") && !text.includes("診療科目")) {
+                return text;
+            }
+        }
+    }
+
+    // 2. 第2優先: 既存の selectors
     const selectors = [
         ".basic-info__address", ".p-clinic-info__address",
         "[itemprop='streetAddress']", ".clinic-address", ".address",
@@ -155,7 +197,8 @@ function dfExtractAddress(doc) {
         const text = cleanText(doc.querySelector(sel)?.textContent ?? "");
         if (text) return text;
     }
-    // フォールバック: li 要素内の都道府県パターン
+
+    // 3. 第3優先: ページ内の都道府県パターン
     const prefRe = new RegExp(`(${PREFECTURES.join("|")})`);
     for (const li of doc.querySelectorAll("li, dd")) {
         const text = cleanText(li.textContent);
@@ -165,14 +208,26 @@ function dfExtractAddress(doc) {
 }
 
 function dfExtractPhone(doc) {
+    // 1. 最優先: class="box-column" の中にある電話番号
+    const boxCols = doc.querySelectorAll(".box-column");
+    for (const box of boxCols) {
+        // 都道府県を含まず、電話番号パターンに一致する文字列
+        const text = cleanText(box.textContent);
+        const m = text.match(/0\d{1,4}-\d{1,4}-\d{3,4}/);
+        if (m) return m[0];
+    }
+
+    // 2. 第2優先: 既存の selectors
     const selectors = [
         ".basic-info__tel", ".clinic-tel",
-        "[itemprop='telephone']", ".tel",
+        "[itemprop='telephone']", ".tel", ".ga-ev-hospital_tel",
     ];
     for (const sel of selectors) {
         const text = cleanText(doc.querySelector(sel)?.textContent ?? "");
         if (/^0[\d\-]+$/.test(text.replace(/\s/g, ""))) return text;
     }
+
+    // 3. 第3優先: ページ全体から電話番号の正規表現抽出
     const m = cleanText(doc.body?.textContent ?? "").match(/0\d{1,4}-\d{1,4}-\d{3,4}/);
     return m ? m[0] : "";
 }
@@ -274,6 +329,21 @@ function dfParseTimeTable(table) {
 }
 
 function dfExtractConsultationHours(doc) {
+    // 1. 最優先: id="timetable" から取得
+    const timetableSection = doc.getElementById("timetable");
+    if (timetableSection) {
+        // テーブル要素があればパース
+        const table = timetableSection.querySelector("table");
+        if (table) {
+            const parsed = dfParseTimeTable(table);
+            if (parsed) return parsed;
+        }
+        // なければテキストとして取得
+        const text = cleanText(timetableSection.textContent);
+        if (text) return text;
+    }
+
+    // 2. 第2優先: 既存の selectors
     for (const sel of ["#timetable table", ".timetable table", ".schedule table"]) {
         const table = doc.querySelector(sel);
         if (table) return dfParseTimeTable(table);
@@ -345,13 +415,18 @@ function dfExtractLatLng(doc) {
    § 6  クリニック基本ページ → レコード変換
    ═══════════════════════════════════════════════════ */
 
-function extractClinicFromHtml(html, clinicBaseUrl) {
+function extractClinicFromHtml(html, clinicBaseUrl, nameFromList = "") {
     const doc = new DOMParser().parseFromString(html, "text/html");
     const { prefecture, area } = dfExtractArea(doc);
     const { lat, lng }         = dfExtractLatLng(doc);
 
+    let name = nameFromList;
+    if (!name) {
+        name = cleanText(doc.querySelector("h1")?.textContent ?? "");
+    }
+
     return {
-        医院名:       cleanText(doc.querySelector("h1")?.textContent ?? ""),
+        医院名:       name,
         医師名:       dfExtractDoctorName(doc),
         診療科目:     dfExtractSpecialties(doc),
         住所:         dfExtractAddress(doc),
@@ -379,7 +454,7 @@ async function discoverClinicPages(startUrl, maxPages, delaySec) {
     const queue         = [normalizeUrl(startUrl)];
     const queuedSet     = new Set(queue);
     const visitedPages  = new Set();
-    const clinicUrls    = [];
+    const clinicUrls    = []; // { name, url } のオブジェクト配列
     const clinicSeen    = new Set();
 
     while (queue.length && visitedPages.size < maxPages) {
@@ -400,7 +475,13 @@ async function discoverClinicPages(startUrl, maxPages, delaySec) {
 
         const { clinicUrls: found, nextPageUrls } = extractLinksFromSearchPage(url, html);
         log(`取材記事ありクリニック発見: ${found.length}件`);
-        found.forEach((u) => pushUnique(clinicUrls, clinicSeen, u));
+        
+        found.forEach((item) => {
+            if (!clinicSeen.has(item.url)) {
+                clinicSeen.add(item.url);
+                clinicUrls.push(item);
+            }
+        });
 
         nextPageUrls.forEach((u) => {
             const key = normalizeUrl(u);
@@ -477,16 +558,16 @@ async function runScrape() {
 
         const rows = [];
         for (let i = 0; i < clinicUrls.length; i++) {
-            const clinicUrl = clinicUrls[i];
+            const item = clinicUrls[i];
             setStatus(`クリニック解析: ${i + 1}/${clinicUrls.length}`);
-            log(`クリニック取得: ${clinicUrl}`);
+            log(`クリニック取得: ${item.url}`);
             try {
-                const html   = await fetchHtml(clinicUrl);
-                const record = extractClinicFromHtml(html, clinicUrl);
+                const html   = await fetchHtml(item.url);
+                const record = extractClinicFromHtml(html, item.url, item.name);
                 rows.push(record);
-                log(`抽出完了: ${record["医院名"] || clinicUrl}`);
+                log(`抽出完了: ${record["医院名"] || item.url}`);
             } catch (err) {
-                log(`WARN 取得失敗: ${clinicUrl} (${errText(err)})`);
+                log(`WARN 取得失敗: ${item.url} (${errText(err)})`);
             }
             if (maxClinics > 0 && rows.length >= maxClinics) break;
             await sleep(delaySec);
